@@ -9,7 +9,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
         config.headers['Content-Type'] = 'application/json';
         config.body = JSON.stringify(body);
     }
-    const res = await fetch(`api/${endpoint}`, config);
+    const res = await fetch(`../backend/api/${endpoint}`, config);
     const data = await res.json();
     if (!res.ok) {
         throw new Error(data.error || 'Server error occurred');
@@ -20,6 +20,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 // ------ AUTH ------
 const authFormLogin = document.getElementById('loginForm');
 const authFormReg = document.getElementById('registerForm');
+const authFormForgot = document.getElementById('forgotPasswordForm');
 const authError = document.getElementById('authError');
 
 if (authFormLogin) {
@@ -32,6 +33,7 @@ if (authFormLogin) {
             });
             window.location.href = 'dashboard.html';
         } catch (err) {
+            authError.className = 'badge badge-owed'; // Reset styles
             authError.textContent = err.message;
             authError.classList.remove('hidden');
         }
@@ -47,10 +49,31 @@ if (authFormLogin) {
             });
             window.location.href = 'dashboard.html';
         } catch (err) {
+            authError.className = 'badge badge-owed';
             authError.textContent = err.message;
             authError.classList.remove('hidden');
         }
     });
+
+    if (authFormForgot) {
+        authFormForgot.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const res = await apiCall('auth.php?action=forgot_password', 'POST', {
+                    email: document.getElementById('forgotEmail').value,
+                    new_password: document.getElementById('forgotNewPassword').value
+                });
+                authError.className = 'badge badge-success'; // Success style
+                authError.textContent = res.message || 'Password reset successfully. You can now login.';
+                authError.classList.remove('hidden');
+                document.getElementById('forgotPasswordForm').reset();
+            } catch (err) {
+                authError.className = 'badge badge-owed';
+                authError.textContent = err.message;
+                authError.classList.remove('hidden');
+            }
+        });
+    }
 }
 
 async function fetchUser() {

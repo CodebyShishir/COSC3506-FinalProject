@@ -47,6 +47,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             sendResponse(['error' => 'Invalid email or password'], 401);
         }
     }
+
+    if ($action === 'forgot_password') {
+        $email = trim($data['email'] ?? '');
+        $new_password = $data['new_password'] ?? '';
+
+        if (!$email || !$new_password) {
+            sendResponse(['error' => 'Email and new password are required'], 400);
+        }
+
+        // Check if email exists
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ?');
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            sendResponse(['error' => 'No account found with that email address'], 404);
+        }
+
+        // Hash the new password and update
+        $hash = password_hash($new_password, PASSWORD_BCRYPT);
+        $stmt = $pdo->prepare('UPDATE users SET password_hash = ? WHERE id = ?');
+        $stmt->execute([$hash, $user['id']]);
+
+        sendResponse(['success' => true, 'message' => 'Password reset successfully']);
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'me') {
