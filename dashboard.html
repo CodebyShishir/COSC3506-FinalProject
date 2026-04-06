@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SplitEase - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <header class="glass-panel">
+        <h2 class="text-gradient" style="margin: 0; cursor:pointer;" onclick="showGroupsView()">SplitEase</h2>
+        <div class="nav-links" style="display:flex; align-items:center;">
+            <span id="userNameDisplay" class="text-muted" style="margin-right:1rem;"></span>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container glass-panel" id="groupsView">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+            <h3>Your Groups</h3>
+            <button class="btn" onclick="openModal('groupModal')">+ New Group</button>
+        </div>
+        <div id="groupsList">
+            <!-- Groups rendered dynamically -->
+        </div>
+    </div>
+
+    <div class="container glass-panel hidden" id="groupDetailView">
+        <button class="btn" onclick="showGroupsView()" style="margin-bottom: 1.5rem; background: transparent; border: 1px solid var(--primary);">&larr; Back to Groups</button>
+        
+        <div style="display: flex; justify-content: space-between; align-items:flex-end;">
+            <div>
+                <h2 class="text-gradient" id="groupTitle"></h2>
+                <p class="text-muted" id="groupMembers"></p>
+            </div>
+            <button class="btn" onclick="openModal('expenseModal')">Add Expense</button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 2rem 0;">
+
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+            
+            <!-- Expenses column -->
+            <div style="flex: 2; min-width: 300px;">
+                <h3>Recent Expenses</h3>
+                <div id="expensesList"></div>
+            </div>
+
+            <!-- Balances column -->
+            <div style="flex: 1; min-width: 300px;">
+                <h3>Ledger & Balances</h3>
+                <div id="balancesList" style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border);"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay hidden" id="groupModal">
+        <div class="glass-panel modal-content">
+            <div class="modal-header">
+                <h3>Create New Group</h3>
+                <span class="close-modal" onclick="closeModal('groupModal')">&times;</span>
+            </div>
+            <div class="form-group">
+                <input type="text" id="newGroupName" placeholder="E.g., Trip to Montreal" required>
+            </div>
+            <div class="form-group" style="margin-bottom:1rem;">
+                <label>Invite by Email (comma separated, optional)</label>
+                <input type="text" id="newGroupEmails" placeholder="alex@test.com, sam@test.com">
+            </div>
+            <button class="btn btn-success" style="width:100%" onclick="createGroup()">Create</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="expenseModal">
+        <div class="glass-panel modal-content">
+            <div class="modal-header">
+                <h3>Log an Expense</h3>
+                <span class="close-modal" onclick="closeModal('expenseModal')">&times;</span>
+            </div>
+            <div class="form-group">
+                <input type="text" id="expDesc" placeholder="Description (e.g. Dinner)" required>
+            </div>
+            <div class="form-group">
+                <input type="number" id="expAmount" placeholder="Total Amount ($)" required>
+            </div>
+            <p class="text-muted" style="margin-bottom:1rem; font-size:0.85rem;">This will be split equally among all members.</p>
+            <button class="btn btn-success" style="width:100%" onclick="addExpense()">Add Expense</button>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Check auth on load for dashboard
+        window.addEventListener('load', () => {
+            fetchUser();
+            loadGroups();
+        });
+    </script>
+</body>
+</html>
