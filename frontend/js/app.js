@@ -156,15 +156,19 @@ async function loadGroupView() {
     if(!exData.expenses.length) {
         exList.innerHTML = '<p class="text-muted">No expenses recorded yet.</p>';
     } else {
-        exList.innerHTML = exData.expenses.map(e => `
+        exList.innerHTML = exData.expenses.map(e => {
+            let receiptBadge = e.receipt_url ? `<a href="../backend/${e.receipt_url}" target="_blank" class="badge badge-success" style="font-size:0.75rem; padding: 0.2rem 0.5rem; display:inline-block; margin-top:0.4rem; text-decoration:none;">&#129534; View Receipt</a>` : '';
+            return `
             <div class="list-item" style="padding: 1rem; border-color:var(--glass-border)">
                 <div>
                     <strong style="display:block;">${e.description}</strong>
                     <small class="text-muted">Paid by ${e.payer_name} on ${new Date(e.created_at).toLocaleDateString()}</small>
+                    <br>${receiptBadge}
                 </div>
                 <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);">$${parseFloat(e.amount).toFixed(2)}</div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     // Load Balances
@@ -196,15 +200,26 @@ async function loadGroupView() {
 async function addExpense() {
     const desc = document.getElementById('expDesc').value;
     const amount = document.getElementById('expAmount').value;
+    const receiptFile = document.getElementById('expReceipt').files[0];
+    
     try {
-        await apiCall('expenses.php?action=add', 'POST', {
-            group_id: currentGroupId,
-            description: desc,
-            amount: amount
+        const formData = new FormData();
+        formData.append('group_id', currentGroupId);
+        formData.append('description', desc);
+        formData.append('amount', amount);
+        if (receiptFile) formData.append('receipt', receiptFile);
+
+        const res = await fetch(`../backend/api/expenses.php?action=add`, {
+            method: 'POST',
+            body: formData
         });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error || 'Failed to log expense');
+
         closeModal('expenseModal');
         document.getElementById('expDesc').value = '';
         document.getElementById('expAmount').value = '';
+        document.getElementById('expReceipt').value = '';
         loadGroupView(); // Reload the UI
     } catch(e) { alert(e.message); }
 }
